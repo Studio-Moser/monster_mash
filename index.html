@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Mash - Prototypes</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: white;
+      font-size: 48px;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.9);
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+    .prototype-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+    @media (max-width: 900px) {
+      .prototype-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .prototype-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .prototype-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+    }
+    .prototype-card.featured {
+      border: 3px solid #667eea;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    }
+    .prototype-number {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .featured .prototype-number {
+      background: #ff6b00;
+    }
+    h2 {
+      margin: 10px 0;
+      color: #333;
+      font-size: 24px;
+    }
+    .mechanics {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .mechanics strong {
+      color: #667eea;
+    }
+    .description {
+      color: #666;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+    .play-button {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
+    .play-button:hover {
+      background: #5568d3;
+    }
+    .featured .play-button {
+      background: #ff6b00;
+    }
+    .featured .play-button:hover {
+      background: #e66000;
+    }
+    .badge {
+      display: inline-block;
+      background: #ff6b00;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-left: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Monster Eater</h1>
+  <p class="subtitle">Game Prototypes - Evolution of Mechanics</p>
+
+  <div class="prototype-grid">
+    
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 1</span>
+      <h2>Basic Color Loop</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Delay board filling, score points<br>
+        <strong>Scoring:</strong> +1 point per eat<br>
+        <strong>Spawn:</strong> ~70% characters / 30% actions
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Characters:</strong> 🔴 Red, 🔵 Blue, 🟢 Green, 🟡 Yellow<br>
+        <strong>Food Chain:</strong> Red→Blue→Green→Yellow→Red (circular)<br>
+        <strong>Direction:</strong> Each faces ↑↓←→<br>
+        <strong>Actions:</strong> ↻↺ (rotate), ↑→↓← (move one space)<br><br>
+        
+        <strong>The Original:</strong> Established core concept of directional eating with circular food chain. Characters stay their type forever (no evolution). Simple +1 scoring per eat.<br><br>
+        
+        <strong>Limitations:</strong> No animations - pieces just appear/disappear instantly. No visual feedback showing which pieces are being evaluated. Difficult to track cascade logic. No hover preview.<br><br>
+        
+        <strong>Key Innovation:</strong> Proved circular loop concept works - pieces never reach "final form", keeping all active.
+      </div>
+      <a href="Code/Prototype 1/index.html" class="play-button">Play Prototype 1</a>
+    </div>
+
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 2</span>
+      <h2>Refined Basics</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Same as P1<br>
+        <strong>Scoring:</strong> +1 point per eat<br>
+        <strong>Spawn:</strong> ~70% characters / 30% actions
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Characters:</strong> 🔴 Red, 🔵 Blue, 🟢 Green, 🟡 Yellow<br>
+        <strong>Food Chain:</strong> Red→Blue→Green→Yellow→Red (circular)<br>
+        <strong>Actions:</strong> Same as P1 (↻↺ rotate, ↑→↓← move)<br><br>
+        
+        <strong>Refinement Focus:</strong> Code cleanup and improved UI layout. Better visual presentation of the eating diagram. More maintainable code structure for adding future features.<br><br>
+        
+        <strong>Changes from P1:</strong> Cleaner code organization, improved CSS layout, better element positioning. Functionally identical gameplay.<br><br>
+        
+        <strong>Purpose:</strong> Create solid foundation before adding complex features like animations and visual feedback.
+      </div>
+      <a href="Code/Prototype 2/index.html" class="play-button">Play Prototype 2</a>
+    </div>
+
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 3</span>
+      <h2>Animal Food Chain + Animations</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Chain reactions and score<br>
+        <strong>Scoring:</strong> +1 point per eat<br>
+        <strong>Spawn:</strong> ~70% characters / 30% actions
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Characters:</strong> 🧑 Human, 🐟 Fish, 🐸 Frog, 🦟 Mosquito<br>
+        <strong>Food Chain:</strong> Human→Fish→Frog→Mosquito→Human (thematic loop!)<br>
+        <strong>Size Hierarchy:</strong> Human (32px) > Fish (26px) > Frog (20px) > Mosquito (14px)<br>
+        <strong>Actions:</strong> ↻↺ (rotate), ↑→↓← (move)<br><br>
+        
+        <strong>Major UX Upgrade:</strong> First prototype with smooth animations! Pieces slide from cell to cell (300ms transitions) instead of instant teleport. Can actually SEE the eating happen.<br><br>
+        
+        <strong>Visual Feedback Added:</strong><br>
+        • Yellow glow shows which piece is being evaluated<br>
+        • Green double-flash when match is found<br>
+        • Hover preview shows semi-transparent next piece<br>
+        • Clockwise neighbor checking visible (125ms per check)<br><br>
+        
+        <strong>Thematic Identity:</strong> Replaced abstract colored circles with relatable animal food chain. Size differences make "who eats whom" instantly clear. Mosquito killing human adds thematic twist.<br><br>
+        
+        <strong>Learning:</strong> Visual feedback is CRITICAL. Complex cascade logic becomes understandable when you can see it working step-by-step.
+      </div>
+      <a href="Code/Prototype 3/index.html" class="play-button">Play Prototype 3</a>
+    </div>
+
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 4</span>
+      <h2>Size-Based Hierarchy</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Chain reactions with size progression<br>
+        <strong>Scoring:</strong> +1 point per eat<br>
+        <strong>Spawn:</strong> ~85% characters / 15% actions
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Characters:</strong> 🟡 Yellow, 🟠 Orange, 🔴 Red, 🟣 Purple, 🔵 Blue<br>
+        <strong>Food Chain:</strong> Yellow→Orange→Red→Purple→Blue (LINEAR progression)<br>
+        <strong>Size Hierarchy:</strong> Yellow (10px) → Orange (18px) → Red (28px) → Purple (40px) → Blue (50px)<br>
+        <strong>Actions:</strong> ↻↺ (rotate), ↑→↓← (move), 💀 (SKULL - remove any piece)<br>
+        <strong>Visual Polish:</strong> All animations from P3<br><br>
+        
+        <strong>Experiment:</strong> Can size alone communicate eating order without themed emojis? YES - dramatic size differences (10px → 50px) make hierarchy obvious.<br><br>
+        
+        <strong>Linear vs Circular:</strong> Unlike P1-3's loop, this is one-way progression. Blue is "final form" - can't be eaten, becomes permanent obstacle.<br><br>
+        
+        <strong>Skull Action:</strong> Emergency tool to remove problematic pieces (especially stuck blue dots). Makes game easier but adds tactical option.<br><br>
+        
+        <strong>Problem Discovered:</strong> End-state pieces (blue) fill board with dead spaces. Reduces strategic options. Linear progression less interesting than perpetual loop.
+      </div>
+      <a href="Code/Prototype 4/index.html" class="play-button">Play Prototype 4</a>
+    </div>
+
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 6</span>
+      <h2>Color Mixing Evolution</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Mix colors to evolve toward black<br>
+        <strong>Scoring:</strong> +1 point per merge<br>
+        <strong>Evolution:</strong> 5 levels before black (final form)
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Starting Colors:</strong> 🔴 Red, 🔵 Blue, 🟡 Yellow (primaries only)<br>
+        <strong>Mixing Rule:</strong> Any color can eat any other color of SAME LEVEL<br>
+        <strong>Actions:</strong> ↻↺ (rotate), ↑→↓← (move), 💀 (remove)<br>
+        <strong>Visual Polish:</strong> Colored circles with black outlines, all P3 animations<br><br>
+        
+        <strong>True Paint Mixing:</strong> Uses RYB color space conversion for realistic paint-style blending:<br>
+        • Red + Blue = Purple (not grey!)<br>
+        • Blue + Yellow = Green<br>
+        • Yellow + Red = Orange<br>
+        • Colors progressively muddy toward black<br><br>
+        
+        <strong>Evolution System:</strong><br>
+        Level 0 (16px) → Level 1 (22px) → Level 2 (28px) → Level 3 (36px) → Level 4 (44px) → Level 5 Black (52px)<br><br>
+        
+        <strong>Critical Flaw:</strong> Same-level merging = 2048 clone. Only 5 eating opportunities before pieces become black (dead). Limited chain potential. Beautiful visuals but derivative gameplay.<br><br>
+        
+        <strong>Verdict:</strong> Too similar to existing merge-puzzle games. Lacks unique identity despite pretty color mixing.
+      </div>
+      <a href="Code/Prototype 6/index.html" class="play-button">Play Prototype 6</a>
+    </div>
+
+    <div class="prototype-card featured">
+      <span class="prototype-number">Prototype 7</span>
+      <h2>Chain Reaction Master</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 4x4 grid (16 spaces)<br>
+        <strong>Goal:</strong> Create massive chain reactions and maximize score<br>
+        <strong>Scoring:</strong> Chain multiplier - n² points (1=1, 2=4, 3=9, 4=16 pts!)<br>
+        <strong>Difficulty:</strong> 90% character spawn / 10% actions
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Characters:</strong> 🧑 Human, 🐟 Fish, 🐸 Frog, 🦟 Mosquito<br>
+        <strong>Food Chain:</strong> Human→Fish→Frog→Mosquito→Human (circular loop, no evolution)<br>
+        <strong>Size hierarchy</strong> shows eating order visually<br>
+        <strong>Direction:</strong> Each faces ↑↓←→ (randomly assigned)<br><br>
+        
+        <strong>🎯 Action Pieces (10% spawn rate):</strong><br>
+        • ↻↺ Rotate in place<br>
+        • ↑→↓← Move + rotate to face that direction<br><br>
+        
+        <strong>⚡ Multi-Eat:</strong> Pieces eat ALL valid targets in their path until blocked. Example: Human→ facing Fish-Fish-Fish eats all 3!<br><br>
+        
+        <strong>🌪️ Direction Inheritance:</strong> After eating, pieces inherit victim's facing direction. Creates unpredictable zigzag cascades:<br>
+        • Human↑ eats Fish← → becomes Human←<br>
+        • Human← eats Frog↓ → becomes Human↓<br>
+        • Chains veer in unexpected directions like Bejeweled<br><br>
+        
+        <strong>💯 Chain Multiplier:</strong> Counts ALL eats across entire cascade (including neighbor-triggered). 3+ chains trigger confetti celebration!<br><br>
+        
+        <strong>🎯 Intelligent Logic:</strong> Last moved piece checks first → clockwise neighbors (top→right→bottom→left) → first valid eater becomes focus → repeats. Yellow glow shows evaluation, green flash shows matches.<br><br>
+        
+        <strong>Why it's unique:</strong> NOT like 2048 (no merging/evolution), NOT like Bejeweled (manual placement + directional facing). Direction inheritance creates emergent cascades that feel "lucky" and shareable!
+      </div>
+      <a href="Code/Prototype 7/index.html" class="play-button">▶ Play Prototype 7</a>
+    </div>
+
+  </div>
+
+  <div style="text-align: center; margin-top: 40px; color: white; opacity: 0.8; font-size: 14px;">
+    <p>Prototype Evolution: From basic color loops → size hierarchies → color mixing → <strong>chain reaction mastery</strong></p>
+    <p>Key Discovery: Circular food chain (no evolution) + multi-eat + direction inheritance = unique, non-derivative gameplay</p>
+  </div>
+
+  <div style="text-align: center; margin-top: 30px; padding: 20px;">
+    <div style="background: rgba(255,255,255,0.95); border-radius: 12px; padding: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 15px 0; color: #333; font-size: 20px;">📚 Documentation</h3>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+        <a href="Strategy.md" style="display: inline-block; background: #667eea; color: white; padding: 10px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.2s;">Strategy & Monetization</a>
+        <a href="Godot_Technical_Arch.md" style="display: inline-block; background: #667eea; color: white; padding: 10px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.2s;">Technical Architecture</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

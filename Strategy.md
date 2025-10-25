@@ -1,9 +1,11 @@
-# Monster Board Game: Full Strategy, Mechanics, and Monetization Document
+# Monster Mash: Strategy and Monetization Ideas
 
 ## Overview
-"Monster Board Game" is a casual yet strategic puzzle game that centers around spatial logic, color-eating mechanics, and tactical use of actions. Eventually to be released as mobile app on iOS and Android as well as desktop game for Steam. Additionally adding to Nintendo Switch would be great.
+"Monster Eater" is a strategic puzzle game that centers around spatial chain reactions, directional facing mechanics, and emergent cascades. Eventually to be released as mobile app on iOS and Android as well as desktop game for Steam. Additionally adding to Nintendo Switch would be great.
 
 The game is designed to be elegant, strategic, and shareable. With no gameplay-altering purchases, its monetization aligns with modern expectations for fairness. By focusing on gameplay-first design, strong visual identity, and powerful social sharing tools, it is positioned for strong organic growth and sustainable revenue.
+
+See `index.html` for interactive prototype comparison and detailed mechanics breakdown.
 
 ---
 
@@ -14,73 +16,31 @@ The game is designed to be elegant, strategic, and shareable. With no gameplay-a
 - Emphasize **aesthetic appeal and polish**.
 - Foster **spontaneous, shareable moments** (especially via video).
 - Avoid pay-to-win mechanics and respect gameplay integrity.
-
----
-
-## Game Mechanics
-
-### 1. Game Board
-- 5x5 grid of cells (25 spaces total).
-- Each cell can be empty, hold a character piece, or an action piece.
-
-### 2. Character Pieces
-- Four monster types by color:
-  - 🔴 Red
-  - 🔵 Blue
-  - 🟢 Green
-  - 🟡 Yellow
-- Each character has a facing direction: Up (↑), Down (↓), Left (←), Right (→).
-- On placement, character is randomly assigned a direction.
-
-### 3. Eating Rules
-- Eating occurs if a character is facing a valid adjacent opponent based on this loop:
-  - Red (🔴) eats Blue (🔵)
-  - Blue (🔵) eats Green (🟢)
-  - Green (🟢) eats Yellow (🟡)
-  - Yellow (🟡) eats Red (🔴)
-- Eating causes the attacker to move into the victim's cell, removing the victim.
-- Eating can trigger a chain reaction (multi-eat combo).
-- Each successful eat = +1 point.
-
-### 4. Action Pieces
-- Include:
-  - Rotate clockwise (↻)
-  - Rotate counter-clockwise (↺)
-  - Move up/down/left/right (via arrow)
-- Can only be placed **on top of a character piece**.
-- Only generated when **at least one character** exists on the board.
-- After action is applied, check for new possible eats.
-
-### 5. Piece Flow
-- At all times, player sees a "Next Piece" preview.
-- Players tap a grid cell to place that piece.
-  - If it's a character, must place on an empty cell.
-  - If it's an action, must place on a character.
-- After placement, system automatically checks for valid eating events.
-
-### 6. Game Over
-- Triggered when board is fully occupied and no further moves are legal.
-- Game Over screen shows score, top scores, and sharing options.
+- **Differentiate from existing puzzle games** through unique mechanic combinations.
 
 ---
 
 ## Shareability and Viral Moments
 
-### 1. Combo Highlights
-- If a character performs a chain of 2+ eats in one move:
-  - Trigger "Highlight Moment" logic.
-  - System captures last ~5 seconds of gameplay.
-  - Prompts user to preview/save/share clip.
+### 1. Combo Highlights (3+ Chain Threshold)
+- Chain reactions of **3+ eats** trigger "Highlight Moment" logic.
+- System captures last ~5 seconds of gameplay showing the cascade.
+- Confetti animations and multiplier popup make moments visually exciting.
+- Prompts user to preview/save/share clip.
+- **Key insight:** Direction inheritance creates surprise cascades worth sharing ("I didn't expect THAT!")
 
 ### 2. Selfie Overlay (iOS/Android)
 - Optional front camera reaction overlay during highlight.
-- On iOS: Explore integration with Apple’s selfie reaction API.
+- On iOS: Explore integration with Apple's selfie reaction API.
 - Result: vertical video with gameplay + user expression.
+- **Best moments:** Unexpected 5+ chains where direction inheritance creates "lucky" cascades.
 
 ### 3. Social Sharing
 - Clip share buttons (TikTok, IG Reels, Twitter, etc.)
-- Share includes watermark and branded hashtag (#MonsterBoardCombo).
+- Share includes watermark and branded hashtag (#MonsterEaterChain or #ChainReactionKing).
+- **Caption suggestion:** "5-chain = 25 points! 🎉" or "Watch this cascade!"
 - Shared videos drive organic installs.
+- **Hook:** "Did you see how the fish turned and created a chain reaction?"
 
 ---
 
@@ -150,60 +110,131 @@ The game is designed to be elegant, strategic, and shareable. With no gameplay-a
 
 ### Core User Flow
 - Main Menu → Game Screen
-- During game: place piece → eat logic → score updates
-- Combo triggers Share Moment Overlay
-- Game ends → Game Over screen
+- During game: place piece → multi-eat cascade → chain multiplier calculated
+- 3+ chain triggers confetti + Share Moment Overlay
+- Exponential scoring creates "one more game" loop
+- Game ends → Game Over screen (shows final score, high score, share button)
 - Return to menu or replay
 
 ---
 
 ## Analytics & KPIs
 
-| Metric                         | Target                |
-|-------------------------------|------------------------|
-| Day 1 Retention               | > 40%                 |
-| Day 7 Retention               | > 20%                 |
-| Avg. Session Length           | ~5+ mins              |
-| Combo Clip Trigger Rate       | > 30% of sessions     |
-| Share Clip Rate               | > 10% of players      |
-| IAP Conversion (Themes/Tip)   | ~2% of DAUs           |
-| Ad Completion Rate (Rewarded) | > 70%                 |
+| Metric                         | Target                | Notes                                    |
+|-------------------------------|------------------------|------------------------------------------|
+| Day 1 Retention               | > 40%                 | Core loop must be immediately satisfying |
+| Day 7 Retention               | > 20%                 | Depth from direction inheritance mastery |
+| Avg. Session Length           | ~5-8 mins             | Multiple short games, 4x4 fills faster   |
+| Combo Clip Trigger Rate       | > 40% of sessions     | 3+ chains should be achievable often     |
+| Share Clip Rate               | > 15% of players      | Direction inheritance creates "wow" moments |
+| Avg. Chain Length             | 2.5+ eats             | Track if multi-eat mechanic is working   |
+| 5+ Chain Achievement Rate     | > 10% of games        | Epic moments for sharing                 |
+| IAP Conversion (Themes/Tip)   | ~2% of DAUs           | Cosmetic only                            |
+| Ad Completion Rate (Rewarded) | > 70%                 | Theme preview, time-limited perks        |
+
 
 ---
 
 ## Development Roadmap
 
 ### Phase 1: Core Gameplay
-- Build game board engine (HTML/JS prototype → Mobile engine)
-- Piece logic, placement, eats, scoring
-- Action logic
+- Build game board engine (HTML/JS prototype)
+- Multi-eat logic with direction inheritance
+- Chain multiplier scoring
+- Action logic (rotate, move)
 - Game Over detection
+- Visual feedback and animations
+- Validate uniqueness vs existing puzzle games
 
 ### Phase 2: Aesthetic Layer
-- Monster art + theme variants
-- Sound FX
-- Basic animations (placement, eat, combo)
+- Monster art + theme variants (keep emoji style or create custom sprites)
+- Sound FX (placement, eating, multi-eat, confetti)
+- Enhanced animations (eating chomp, combo fanfare)
+- Particle effects for celebrations
 - Polish for first public beta
 
 ### Phase 3: Share Feature & Social
-- Highlight detection logic
-- Auto-capture clip buffer
-- Selfie overlay
-- Share SDKs
+- Highlight detection logic (3+ chains trigger auto-capture)
+- Auto-capture clip buffer (last ~5 seconds)
+- Selfie overlay (optional front camera)
+- Share SDKs (TikTok, IG Reels, Twitter)
 - Analytics integration
+- **Critical:** Chain reactions are the shareable moment!
 
 ### Phase 4: Monetization 
 - IAP themes & Tip Jar
 - Optional rewarded video system
 - Theme store implementation
 - Analytics tuning
+- **Reminder:** Cosmetic only, never affect gameplay
 
 ### Phase 5: Launch + LiveOps
 - Soft launch (test region)
 - Retention + feedback loop
 - Bug fixes + A/B tests
 - Global launch + marketing
-- Post-launch: New themes, events
+- Post-launch: New themes, events, seasonal content
+
+---
+
+## Critical Design Learnings
+
+### What Didn't Work
+
+**Linear Progression (Prototype 4):**
+- End-state pieces (Blue can't be eaten) create dead board spaces
+- Reduces strategic options as game progresses
+- Board becomes cluttered with immovable obstacles
+
+**Evolution/Merging (Prototypes 5-6):**
+- Same-level merging = 2048 clone
+- Color mixing looks pretty but doesn't create unique gameplay
+- Limited chain potential (only 2-3 levels before reaching black)
+- Players recognize derivative mechanics immediately
+
+**Too Easy (Early action spawn rates):**
+- 70% characters wasn't challenging enough
+- Players could keep board clear indefinitely
+- No tension or strategic trade-offs
+
+### What Worked
+
+**Circular Food Chain:**
+- No end states = all pieces stay active and dangerous
+- Creates balanced rock-paper-scissors-style dynamics
+- Enables infinite theoretical chain length
+
+**Direction Inheritance:**
+- Simple rule with complex emergent behavior
+- Creates "lucky" feeling when cascades veer unexpectedly
+- Players can't fully predict outcomes = exciting
+- Differentiates from deterministic puzzle games
+
+**Multi-Eat Mechanic:**
+- Rewards strategic line setup
+- Creates satisfying "clear the lane" moments
+- Bowling pin effect is immediately gratifying
+- Combines with direction inheritance for maximum emergence
+
+**Exponential Scoring:**
+- Makes risk-taking worthwhile
+- 16 points for 4-chain vs 4 points for 4 separate eats
+- Encourages setup over reactive play
+- Creates high score chase motivation
+
+**Visual Feedback:**
+- Yellow checking glow makes logic learnable
+- Green flash provides positive reinforcement
+- Confetti creates "woohoo" celebration moments
+- Multiplier popup shows value of chains
+
+### Design Principles Validated
+
+1. **Emergence > Complexity:** Simple rules (circular chain + direction inheritance) create complex outcomes
+2. **Active > Static:** Circular loop better than linear progression with end states
+3. **Reward Planning:** Exponential scoring encourages strategic setup
+4. **Scarcity = Value:** 10% action rate makes each rotation/move meaningful
+5. **Show the Logic:** Visual feedback transforms complex cascade into learnable system
 
 ---
 
@@ -214,3 +245,5 @@ The game is designed to be elegant, strategic, and shareable. With no gameplay-a
 - Games like Lex: Emphasize beauty and clarity over monetization.
 - TikTok clips + selfie overlays: High-performing content for game marketing.
 - Users respond to fair games with cosmetic-only monetization (source: GameRefinery, Udonis, Clevertap).
+- **Bejeweled/Match-3 success:** Players love "lucky" cascades they didn't fully plan - direction inheritance provides this without copying match-3.
+- **2048 lesson:** Avoid same-level merging mechanics - market is saturated with clones.

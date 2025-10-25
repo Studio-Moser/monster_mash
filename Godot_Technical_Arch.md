@@ -1,4 +1,4 @@
-# Monster Board Game – Godot Technical Architecture
+# Monster Mash – Godot Technical Architecture
 
 This technical architecture outlines how to implement the **Monster Board Game** using the **Godot 4** engine. It translates the high-level strategy into a concrete project structure, modules, and systems, optimized for an AI-centric workflow and portrait 2-D production.
 
