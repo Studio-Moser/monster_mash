@@ -281,7 +281,7 @@
       <a href="Code/Prototype 6/index.html" class="play-button">Play Prototype 6</a>
     </div>
 
-    <div class="prototype-card featured">
+    <div class="prototype-card">
       <span class="prototype-number">Prototype 7</span>
       <h2>Chain Reaction Master</h2>
       
@@ -316,6 +316,52 @@
         <strong>Why it's unique:</strong> NOT like 2048 (no merging/evolution), NOT like Bejeweled (manual placement + directional facing). Direction inheritance creates emergent cascades that feel "lucky" and shareable!
       </div>
       <a href="Code/Prototype 7/index.html" class="play-button">▶ Play Prototype 7</a>
+    </div>
+
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 8</span>
+      <h2>Sliding Physics</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Create massive chain reactions and maximize score<br>
+        <strong>Scoring:</strong> Chain multiplier - n² points (1=1, 2=4, 3=9, 4=16 pts!)<br>
+        <strong>Spawn:</strong> 90% creatures / 8% actions / 2% specials
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Regular Creatures (90%):</strong> 🧑 Human, 🐟 Fish, 🐸 Frog, 🦟 Mosquito<br>
+        <strong>Food Chain:</strong> Human→Fish→Frog→Mosquito→Human (circular loop, no evolution)<br>
+        <strong>Direction:</strong> Each faces ↑↓←→ (randomly assigned)<br><br>
+        
+        <strong>🎯 Core Mechanic: Sliding Physics!</strong> When placed or moved, pieces slide in their facing direction until hitting the edge or another piece!<br><br>
+        
+        <strong>How Sliding Works:</strong><br>
+        • Place a creature → it slides until hitting edge/obstacle/another piece<br>
+        • Use movement action → piece rotates and slides in new direction<br>
+        • Creates clustered "collision points" where pieces stack up<br>
+        • After sliding, evaluates eating logic at final position<br><br>
+        
+        <strong>⚡ Multi-Eat System:</strong> Pieces eat ALL valid targets in a line until blocked. NO direction inheritance - pieces keep their original direction while eating (more predictable than P7).<br><br>
+        
+        <strong>🔧 Actions (8% spawn):</strong> ↻↺ (rotate in place), ↑→↓← (move one space + rotate to face that direction)<br><br>
+        
+        <strong>⭐ Special Pieces (2% spawn - rare!):</strong><br>
+        • 🐻 <strong>Bear</strong> - Top predator! Slides and eats ALL creatures in its path (Human, Fish, Frog, Mosquito) but stops at boulders<br>
+        • 🪨 <strong>Boulder</strong> - Permanent obstacle, blocks sliding, can't be eaten by creatures or bear<br>
+        • 💣 <strong>Bomb</strong> - Boulder removal tool! Only appears when boulders exist. Can only be placed ON boulders - removes both bomb and boulder instantly<br><br>
+        
+        <strong>💯 Chain Multiplier:</strong> Exponential scoring! 1 eat=1pt, 2 eats=4pts, 3 eats=9pts, 4 eats=16pts. 3+ chains trigger confetti!<br><br>
+        
+        <strong>Key Differences from P7:</strong><br>
+        • Sliding creates spatial strategy - WHERE pieces land matters<br>
+        • NO direction inheritance = more predictable, less chaotic<br>
+        • Special pieces add board control (bear=clear, boulder=block, bomb=remove)<br>
+        • Larger 5x5 board = more room for complex setups<br><br>
+        
+        <strong>Strategic depth:</strong> Plan ahead for WHERE pieces will slide. Create "bowling pin" formations. Use rare specials wisely - bear to clear crowded areas, boulders to redirect sliding paths, bombs to remove problematic obstacles.
+      </div>
+      <a href="Code/Prototype 8/index.html" class="play-button">▶ Play Prototype 8</a>
     </div>
 
   </div>
