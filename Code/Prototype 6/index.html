@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Board Game - Prototype 6 (Color Mixing)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f5f5f5;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+      position: relative;
+    }
+    .cell {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #000;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      cursor: pointer;
+      position: relative;
+    }
+    .color-circle {
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-shadow: 0 0 3px rgba(0,0,0,0.5);
+      font-weight: bold;
+      border: 2px solid #000;
+      box-sizing: border-box;
+    }
+    .cell .hover-preview {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .cell:hover {
+      background-color: #f0f0f0;
+    }
+    .cell.checking {
+      border: 3px solid #ffcc00;
+      box-shadow: 0 0 10px #ffcc00;
+    }
+    .cell.match-found {
+      animation: flash-match 0.5s;
+    }
+    @keyframes flash-match {
+      0%, 100% { border-color: #000; }
+      25%, 75% { border-color: #00ff00; border-width: 3px; box-shadow: 0 0 15px #00ff00; }
+      50% { border-color: #000; }
+    }
+    .animated-piece {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+      transition: all 0.3s ease-out;
+    }
+    /* Size classes based on mix level */
+    .level-0 { width: 16px; height: 16px; font-size: 10px; }
+    .level-1 { width: 22px; height: 22px; font-size: 11px; }
+    .level-2 { width: 28px; height: 28px; font-size: 12px; }
+    .level-3 { width: 36px; height: 36px; font-size: 14px; }
+    .level-4 { width: 44px; height: 44px; font-size: 16px; }
+    .level-5 { width: 52px; height: 52px; font-size: 18px; }
+    
+    .info {
+      margin: 10px;
+    }
+    #next-piece {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      min-height: 30px;
+      vertical-align: middle;
+    }
+    .diagram {
+      margin-top: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .color-sample {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      vertical-align: middle;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monster Board Game - Prototype 6</h1>
+  <h3>Color Mixing Evolution</h3>
+  <div class="info">
+    <p>Score: <span id="score">0</span></p>
+    <p>Next Piece: <span id="next-piece">...</span></p>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="diagram">
+    <p><strong>True Color Mixing!</strong></p>
+    <p>Start with 3 primaries: <span class="color-sample" style="background: rgb(255,0,0)"></span> Red, 
+       <span class="color-sample" style="background: rgb(255,255,0)"></span> Yellow, 
+       <span class="color-sample" style="background: rgb(0,0,255)"></span> Blue</p>
+    <p><strong>Rule: Only SAME SIZE pieces can mix together!</strong></p>
+    <p>Level 0 + Level 0 → Level 1 (grows larger, colors mix)</p>
+    <p>Level 1 + Level 1 → Level 2, etc.</p>
+    <p>After 5 levels → <span class="color-sample" style="background: rgb(0,0,0)"></span> Black (final form)</p>
+    <p><strong>Actions:</strong> ↻ ↺ (rotate), ↑ → ↓ ← (move), 💀 (remove piece)</p>
+  </div>
+  <script>
+    const boardSize = 5;
+    const directions = ["↑", "→", "↓", "←"];
+    const actions = ["↻", "↺", "↑", "→", "↓", "←", "💀"];
+    
+    // Starting primary colors (RYB color space for paint-like mixing)
+    const primaryColors = [
+      { r: 255, g: 0, b: 0, name: "Red" },      // Red
+      { r: 255, g: 255, b: 0, name: "Yellow" }, // Yellow
+      { r: 0, g: 0, b: 255, name: "Blue" }      // Blue
+    ];
+    
+    const MAX_MIX_LEVEL = 5; // After 5 mixes, becomes black
+
+    let board = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+    let score = 0;
+    let nextPiece = null;
+
+    function rgbToString(rgb) {
+      return `rgb(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)})`;
+    }
+
+    function mixColors(color1, color2) {
+      // Convert RGB to RYB for paint-like mixing
+      const ryb1 = rgbToRyb(color1);
+      const ryb2 = rgbToRyb(color2);
+      
+      // Mix in RYB space
+      const mixedRyb = {
+        r: (ryb1.r + ryb2.r) / 2,
+        y: (ryb1.y + ryb2.y) / 2,
+        b: (ryb1.b + ryb2.b) / 2
+      };
+      
+      // Convert back to RGB
+      return rybToRgb(mixedRyb);
+    }
+
+    function rgbToRyb(rgb) {
+      // Simplified RGB to RYB conversion
+      const r = rgb.r / 255;
+      const g = rgb.g / 255;
+      const b = rgb.b / 255;
+      
+      // Remove white
+      const w = Math.min(r, g, b);
+      const r1 = r - w;
+      const g1 = g - w;
+      const b1 = b - w;
+      
+      // Get the yellow out of the green
+      const mg = Math.max(r1, g1, b1);
+      const y = Math.min(r1, g1);
+      const r2 = r1 - y;
+      const g2 = g1 - y;
+      const b2 = b1;
+      
+      // If green, convert to yellow + blue
+      const by = g2;
+      const r3 = r2;
+      const b3 = b2 + by;
+      
+      return { r: r3, y: y, b: b3 };
+    }
+
+    function rybToRgb(ryb) {
+      // Simplified RYB to RGB conversion
+      let r = ryb.r;
+      let y = ryb.y;
+      let b = ryb.b;
+      
+      // Remove the yellow from the blue to get green
+      const g = Math.min(y, b);
+      y = y - g;
+      b = b - g;
+      
+      // Recombine
+      const r1 = r + y;
+      const g1 = g + y;
+      const b1 = b;
+      
+      // Normalize and return
+      const max = Math.max(r1, g1, b1);
+      const scale = max > 0 ? 1 / max : 1;
+      
+      return {
+        r: Math.min(255, r1 * 255 * scale),
+        g: Math.min(255, g1 * 255 * scale),
+        b: Math.min(255, b1 * 255 * scale)
+      };
+    }
+
+    function getSizeClass(level) {
+      return `level-${level}`;
+    }
+
+    function updateBoardUI() {
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+          const piece = board[r][c];
+          if (!piece) {
+            cell.innerHTML = "";
+          } else if (piece.color) {
+            const sizeClass = getSizeClass(piece.level);
+            const colorStr = rgbToString(piece.color);
+            const direction = piece.level >= MAX_MIX_LEVEL ? "" : piece.direction;
+            cell.innerHTML = `<div class="color-circle ${sizeClass}" style="background-color: ${colorStr}">${direction}</div>`;
+          } else if (piece.action) {
+            cell.innerHTML = piece.action;
+          }
+        }
+      }
+    }
+
+    function applyAction(r, c, action) {
+      const piece = board[r][c];
+      if (!piece || !piece.color) return [r, c];
+
+      if (action === "💀") {
+        board[r][c] = null;
+        return null;
+      } else if (action === "↻") {
+        piece.direction = rotate(piece.direction, 1);
+        return [r, c];
+      } else if (action === "↺") {
+        piece.direction = rotate(piece.direction, -1);
+        return [r, c];
+      } else {
+        const move = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] }[action];
+        const nr = r + move[0];
+        const nc = c + move[1];
+        if (inBounds(nr, nc) && board[nr][nc] === null) {
+          board[nr][nc] = piece;
+          board[r][c] = null;
+          return [nr, nc];
+        }
+        return [r, c];
+      }
+    }
+
+    function rotate(dir, delta) {
+      const idx = directions.indexOf(dir);
+      return directions[(idx + delta + 4) % 4];
+    }
+
+    function inBounds(r, c) {
+      return r >= 0 && r < boardSize && c >= 0 && c < boardSize;
+    }
+
+    function highlightCell(r, c, className) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) {
+        cell.classList.add(className);
+      }
+    }
+
+    function unhighlightCell(r, c, className) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) {
+        cell.classList.remove(className);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function flashMatch(r, c) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) {
+        cell.classList.add('match-found');
+        await sleep(500);
+        cell.classList.remove('match-found');
+      }
+    }
+
+    async function placePiece(r, c) {
+      if (!nextPiece) return;
+      const cell = board[r][c];
+      let placedPos = null;
+      
+      if (nextPiece.color && !cell) {
+        board[r][c] = { ...nextPiece, color: { ...nextPiece.color } };
+        placedPos = [r, c];
+      } else if (nextPiece.action && cell && cell.color) {
+        placedPos = applyAction(r, c, nextPiece.action);
+      } else {
+        return;
+      }
+
+      updateBoardUI();
+      
+      if (placedPos) {
+        await checkAllEats(placedPos);
+      }
+      
+      scoreDisplay.textContent = score;
+      nextPiece = generateNextPiece();
+      updateBoardUI();
+      nextPieceDisplay.innerHTML = displayPiece(nextPiece);
+
+      if (isBoardFull()) {
+        alert("Game Over! Final Score: " + score);
+        resetGame();
+      }
+    }
+
+    async function checkAllEats(startPos) {
+      let lastAnimatedPos = startPos;
+      let keepChecking = true;
+
+      while (keepChecking) {
+        keepChecking = false;
+        
+        if (lastAnimatedPos) {
+          const [r, c] = lastAnimatedPos;
+          highlightCell(r, c, 'checking');
+          await sleep(250);
+          
+          const eatResult = await tryEat(r, c);
+          unhighlightCell(r, c, 'checking');
+          
+          if (eatResult) {
+            lastAnimatedPos = eatResult;
+            keepChecking = true;
+            continue;
+          }
+        }
+
+        if (lastAnimatedPos) {
+          const [r, c] = lastAnimatedPos;
+          const clockwiseOffsets = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+          
+          for (let [dr, dc] of clockwiseOffsets) {
+            const nr = r + dr, nc = c + dc;
+            if (inBounds(nr, nc)) {
+              highlightCell(nr, nc, 'checking');
+              await sleep(250);
+              unhighlightCell(nr, nc, 'checking');
+            }
+          }
+          
+          for (let [dr, dc] of clockwiseOffsets) {
+            const nr = r + dr, nc = c + dc;
+            if (inBounds(nr, nc)) {
+              const eatResult = await tryEat(nr, nc);
+              
+              if (eatResult) {
+                lastAnimatedPos = eatResult;
+                keepChecking = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function getCellPosition(r, c) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const boardRect = boardElem.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+      return {
+        left: cellRect.left - boardRect.left,
+        top: cellRect.top - boardRect.top
+      };
+    }
+
+    async function animateEat(fromR, fromC, toR, toC, piece) {
+      return new Promise(resolve => {
+        const animPiece = document.createElement('div');
+        animPiece.className = 'animated-piece';
+        const sizeClass = getSizeClass(piece.level);
+        const colorStr = rgbToString(piece.color);
+        const direction = piece.level >= MAX_MIX_LEVEL ? "" : piece.direction;
+        animPiece.innerHTML = `<div class="color-circle ${sizeClass}" style="background-color: ${colorStr}">${direction}</div>`;
+        
+        const fromPos = getCellPosition(fromR, fromC);
+        const toPos = getCellPosition(toR, toC);
+        
+        animPiece.style.left = fromPos.left + 'px';
+        animPiece.style.top = fromPos.top + 'px';
+        
+        boardElem.appendChild(animPiece);
+        
+        requestAnimationFrame(() => {
+          animPiece.style.left = toPos.left + 'px';
+          animPiece.style.top = toPos.top + 'px';
+        });
+        
+        setTimeout(() => {
+          animPiece.remove();
+          resolve();
+        }, 300);
+      });
+    }
+
+    async function tryEat(r, c) {
+      const piece = board[r][c];
+      if (!piece || !piece.color) return null;
+      
+      // Black pieces (level >= MAX_MIX_LEVEL) can't eat
+      if (piece.level >= MAX_MIX_LEVEL) return null;
+      
+      const [dr, dc] = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] }[piece.direction];
+      const nr = r + dr, nc = c + dc;
+      
+      if (inBounds(nr, nc)) {
+        const target = board[nr][nc];
+        
+        // Can only eat pieces of the SAME LEVEL
+        if (target && target.color && target.level === piece.level) {
+          await Promise.all([flashMatch(r, c), flashMatch(nr, nc)]);
+          
+          await animateEat(r, c, nr, nc, piece);
+          
+          // Mix the colors
+          const mixedColor = mixColors(piece.color, target.color);
+          const newLevel = piece.level + 1;
+          
+          // Cap at MAX_MIX_LEVEL (becomes black)
+          const finalLevel = Math.min(newLevel, MAX_MIX_LEVEL);
+          const finalColor = finalLevel >= MAX_MIX_LEVEL 
+            ? { r: 0, g: 0, b: 0 } 
+            : mixedColor;
+          
+          const mixedPiece = { 
+            ...piece, 
+            color: finalColor,
+            level: finalLevel
+          };
+          
+          board[nr][nc] = mixedPiece;
+          board[r][c] = null;
+          score++;
+          updateBoardUI();
+          
+          return [nr, nc];
+        }
+      }
+      return null;
+    }
+
+    function isBoardFull() {
+      return board.every(row => row.every(cell => cell !== null));
+    }
+
+    function generateNextPiece() {
+      const hasCharacter = board.some(row => row.some(cell => cell && cell.color));
+      if (!hasCharacter || Math.random() < 0.7) {
+        const color = primaryColors[Math.floor(Math.random() * primaryColors.length)];
+        return {
+          color: { ...color },
+          level: 0,
+          direction: directions[Math.floor(Math.random() * directions.length)]
+        };
+      } else {
+        return {
+          action: actions[Math.floor(Math.random() * actions.length)]
+        };
+      }
+    }
+
+    function displayPiece(piece) {
+      if (piece.color) {
+        const sizeClass = getSizeClass(piece.level);
+        const colorStr = rgbToString(piece.color);
+        const direction = piece.level >= MAX_MIX_LEVEL ? "" : piece.direction;
+        return `<div class="color-circle ${sizeClass}" style="background-color: ${colorStr}">${direction}</div>`;
+      } else {
+        return piece.action;
+      }
+    }
+
+    function resetGame() {
+      board = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+      score = 0;
+      scoreDisplay.textContent = 0;
+      nextPiece = generateNextPiece();
+      nextPieceDisplay.innerHTML = displayPiece(nextPiece);
+      updateBoardUI();
+    }
+
+    const boardElem = document.getElementById("board");
+    const scoreDisplay = document.getElementById("score");
+    const nextPieceDisplay = document.getElementById("next-piece");
+
+    function showHoverPreview(r, c) {
+      if (!nextPiece) return;
+      
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const piece = board[r][c];
+      
+      const isValid = (nextPiece.color && !piece) || (nextPiece.action && piece && piece.color);
+      if (!isValid) return;
+      
+      const preview = document.createElement('div');
+      preview.className = 'hover-preview';
+      preview.innerHTML = displayPiece(nextPiece);
+      cell.appendChild(preview);
+    }
+
+    function hideHoverPreview(r, c) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const preview = cell.querySelector('.hover-preview');
+      if (preview) {
+        preview.remove();
+      }
+    }
+
+    for (let r = 0; r < boardSize; r++) {
+      for (let c = 0; c < boardSize; c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        cell.onclick = () => placePiece(r, c);
+        cell.onmouseenter = () => showHoverPreview(r, c);
+        cell.onmouseleave = () => hideHoverPreview(r, c);
+        boardElem.appendChild(cell);
+      }
+    }
+
+    resetGame();
+  </script>
+</body>
+</html>
+

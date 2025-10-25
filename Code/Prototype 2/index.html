@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Board Game</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .cell {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .info {
+      margin: 10px;
+    }
+    .diagram {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monster Board Game</h1>
+  <div class="info">
+    <p>Score: <span id="score">0</span></p>
+    <p>Next Piece: <span id="next-piece">...</span></p>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="diagram">
+    <p>🔴 eats 🔵</p>
+    <p>🔵 eats 🟢</p>
+    <p>🟢 eats 🟡</p>
+    <p>🟡 eats 🔴</p>
+  </div>
+  <script>
+    const boardSize = 5;
+    const colors = ["🔴", "🔵", "🟢", "🟡"];
+    const directions = ["↑", "→", "↓", "←"];
+    const actions = ["↻", "↺", "↑", "→", "↓", "←"];
+    const eatRules = { "🔴": "🔵", "🔵": "🟢", "🟢": "🟡", "🟡": "🔴" };
+
+    let board = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+    let score = 0;
+    let nextPiece = null;
+
+    function updateBoardUI() {
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+          const piece = board[r][c];
+          if (!piece) {
+            cell.textContent = "";
+          } else if (piece.color) {
+            cell.textContent = piece.color + piece.direction;
+          } else if (piece.action) {
+            cell.textContent = piece.action;
+          }
+        }
+      }
+    }
+
+    function applyAction(r, c, action) {
+      const piece = board[r][c];
+      if (!piece || !piece.color) return;
+
+      if (action === "↻") {
+        piece.direction = rotate(piece.direction, 1);
+      } else if (action === "↺") {
+        piece.direction = rotate(piece.direction, -1);
+      } else {
+        const move = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] }[action];
+        const nr = r + move[0];
+        const nc = c + move[1];
+        if (inBounds(nr, nc) && board[nr][nc] === null) {
+          board[nr][nc] = piece;
+          board[r][c] = null;
+        }
+      }
+    }
+
+    function rotate(dir, delta) {
+      const idx = directions.indexOf(dir);
+      return directions[(idx + delta + 4) % 4];
+    }
+
+    function inBounds(r, c) {
+      return r >= 0 && r < boardSize && c >= 0 && c < boardSize;
+    }
+
+    function placePiece(r, c) {
+      if (!nextPiece) return;
+      const cell = board[r][c];
+      if (nextPiece.color && !cell) {
+        board[r][c] = { ...nextPiece };
+      } else if (nextPiece.action && cell && cell.color) {
+        applyAction(r, c, nextPiece.action);
+      } else {
+        return; // Invalid placement
+      }
+
+      checkAllEats();
+      scoreDisplay.textContent = score;
+      nextPiece = generateNextPiece();
+      updateBoardUI();
+      nextPieceDisplay.textContent = displayPiece(nextPiece);
+
+      if (isBoardFull()) {
+        alert("Game Over! Final Score: " + score);
+        resetGame();
+      }
+    }
+
+    function checkAllEats() {
+      let changed;
+      do {
+        changed = false;
+        for (let r = 0; r < boardSize; r++) {
+          for (let c = 0; c < boardSize; c++) {
+            const piece = board[r][c];
+            if (!piece || !piece.color) continue;
+            const [dr, dc] = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] }[piece.direction];
+            const nr = r + dr, nc = c + dc;
+            if (inBounds(nr, nc)) {
+              const target = board[nr][nc];
+              if (target && target.color === eatRules[piece.color]) {
+                board[nr][nc] = { ...piece };
+                board[r][c] = null;
+                score++;
+                changed = true;
+              }
+            }
+          }
+        }
+      } while (changed);
+    }
+
+    function isBoardFull() {
+      return board.every(row => row.every(cell => cell !== null));
+    }
+
+    function generateNextPiece() {
+      const hasCharacter = board.some(row => row.some(cell => cell && cell.color));
+      if (!hasCharacter || Math.random() < 0.7) {
+        return {
+          color: colors[Math.floor(Math.random() * colors.length)],
+          direction: directions[Math.floor(Math.random() * directions.length)]
+        };
+      } else {
+        return {
+          action: actions[Math.floor(Math.random() * actions.length)]
+        };
+      }
+    }
+
+    function displayPiece(piece) {
+      return piece.color ? piece.color + piece.direction : piece.action;
+    }
+
+    function resetGame() {
+      board = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+      score = 0;
+      scoreDisplay.textContent = 0;
+      nextPiece = generateNextPiece();
+      nextPieceDisplay.textContent = displayPiece(nextPiece);
+      updateBoardUI();
+    }
+
+    const boardElem = document.getElementById("board");
+    const scoreDisplay = document.getElementById("score");
+    const nextPieceDisplay = document.getElementById("next-piece");
+
+    for (let r = 0; r < boardSize; r++) {
+      for (let c = 0; c < boardSize; c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        cell.onclick = () => placePiece(r, c);
+        boardElem.appendChild(cell);
+      }
+    }
+
+    resetGame();
+  </script>
+</body>
+</html>
