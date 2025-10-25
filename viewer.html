@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Mash - Documentation</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .header {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 32px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .nav {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .nav a {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 8px 20px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .nav a:hover, .nav a.active {
+      background: rgba(255,255,255,0.3);
+    }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px 40px 20px;
+    }
+    .content {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      line-height: 1.6;
+    }
+    .content h1 {
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    .content h2 {
+      color: #764ba2;
+      margin-top: 30px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 5px;
+    }
+    .content h3 {
+      color: #555;
+      margin-top: 25px;
+    }
+    .content code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      color: #d63384;
+    }
+    .content pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border-left: 4px solid #667eea;
+    }
+    .content pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+      font-size: 0.9em;
+    }
+    .content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 20px 0;
+    }
+    .content th {
+      background: #667eea;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: bold;
+    }
+    .content td {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+    }
+    .content tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .content a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .content a:hover {
+      text-decoration: underline;
+    }
+    .content blockquote {
+      border-left: 4px solid #667eea;
+      margin: 20px 0;
+      padding: 10px 20px;
+      background: #f8f9ff;
+      font-style: italic;
+    }
+    .content ul, .content ol {
+      padding-left: 25px;
+    }
+    .content li {
+      margin: 8px 0;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: white;
+      font-size: 18px;
+    }
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 20px;
+      border-radius: 6px;
+      border-left: 4px solid #c62828;
+    }
+    @media (max-width: 768px) {
+      .content {
+        padding: 20px;
+      }
+      .content pre {
+        font-size: 0.85em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎮 Monster Mash Documentation</h1>
+    <div class="nav">
+      <a href="index.html">← Back to Prototypes</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="loading" class="loading">Loading documentation...</div>
+    <div id="content" class="content" style="display: none;"></div>
+  </div>
+
+  <script>
+    // Parse URL parameter to get which doc to load
+    const urlParams = new URLSearchParams(window.location.search);
+    const docFile = urlParams.get('doc') || 'docs/Strategy.md';
+
+    // Configure marked for better rendering
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      headerIds: true,
+      mangle: false
+    });
+
+    // Fetch and render markdown
+    fetch(docFile)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Could not load ${docFile}`);
+        }
+        return response.text();
+      })
+      .then(markdown => {
+        const html = marked.parse(markdown);
+        document.getElementById('content').innerHTML = html;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        
+        // Update page title
+        const firstH1 = document.querySelector('#content h1');
+        if (firstH1) {
+          document.title = firstH1.textContent + ' - Monster Mash';
+        }
+      })
+      .catch(error => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').innerHTML = `
+          <div class="error">
+            <strong>Error:</strong> ${error.message}
+            <br><br>
+            <a href="index.html">Return to home</a>
+          </div>
+        `;
+        document.getElementById('content').style.display = 'block';
+      });
+  </script>
+</body>
+</html>
+
