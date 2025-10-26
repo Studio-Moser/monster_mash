@@ -364,6 +364,52 @@
       <a href="Code/Prototype 8/index.html" class="play-button">▶ Play Prototype 8</a>
     </div>
 
+    <div class="prototype-card">
+      <span class="prototype-number">Prototype 9</span>
+      <h2>Direct Placement (No Sliding)</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 5x5 grid (25 spaces)<br>
+        <strong>Goal:</strong> Create massive chain reactions and maximize score<br>
+        <strong>Scoring:</strong> Chain multiplier - n² points (1=1, 2=4, 3=9, 4=16 pts!)<br>
+        <strong>Spawn:</strong> 90% creatures / 8% actions / 2% specials
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Regular Creatures (90%):</strong> 🧑 Human, 🐟 Fish, 🐸 Frog, 🦟 Mosquito<br>
+        <strong>Food Chain:</strong> Human→Fish→Frog→Mosquito→Human (circular loop, no evolution)<br>
+        <strong>Direction:</strong> Each faces ↑↓←→ (randomly assigned)<br><br>
+        
+        <strong>🎯 Key Difference: NO Sliding!</strong> Pieces stay EXACTLY where you place them. No sliding physics!<br><br>
+        
+        <strong>Direct Placement:</strong><br>
+        • Click to place creature → it stays in that exact cell<br>
+        • Movement actions (↑→↓←) move piece ONE space only<br>
+        • More precise control vs P8's sliding<br>
+        • Easier to plan exact board positions<br><br>
+        
+        <strong>⚡ Multi-Eat System:</strong> Pieces eat ALL valid targets in a line until blocked. NO direction inheritance - pieces keep their original direction while eating.<br><br>
+        
+        <strong>🔧 Actions (8% spawn):</strong> ↻↺ (rotate in place), ↑→↓← (move exactly ONE space + rotate)<br><br>
+        
+        <strong>⭐ Special Pieces (2% spawn - rare!):</strong><br>
+        • 🐻 <strong>Bear</strong> - Top predator! Eats ALL creatures in its path but stops at boulders<br>
+        • 🪨 <strong>Boulder</strong> - Permanent obstacle, can't be eaten by creatures or bear<br>
+        • 💣 <strong>Bomb</strong> - Boulder removal tool! Only appears when boulders exist. Can only be placed ON boulders - removes both bomb and boulder instantly<br><br>
+        
+        <strong>💯 Chain Multiplier:</strong> Exponential scoring! 1 eat=1pt, 2 eats=4pts, 3 eats=9pts, 4 eats=16pts. 3+ chains trigger confetti!<br><br>
+        
+        <strong>P8 vs P9 Comparison:</strong><br>
+        • <strong>P8 (Sliding):</strong> Strategic WHERE pieces land after sliding, less control<br>
+        • <strong>P9 (Direct):</strong> Precise placement control, easier to set up exact formations<br>
+        • Both have same creatures, specials, food chain, and multi-eat mechanics<br>
+        • P9 feels more like chess (precise positioning), P8 more like physics puzzle<br><br>
+        
+        <strong>Strategic depth:</strong> Direct placement gives you total control over piece positioning. Plan exact board layouts. Set up perfect eating lines. Use rare specials wisely - bear to clear creatures, boulders to create obstacles, bombs to remove problematic blocks.
+      </div>
+      <a href="Code/Prototype 9/index.html" class="play-button">▶ Play Prototype 9</a>
+    </div>
+
   </div>
 </body>
 </html>
