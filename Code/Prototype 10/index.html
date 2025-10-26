@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monster Board Game - Prototype 10 (Long-Range Eating)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f5f5f5;
+    }
+    .board {
+      display: grid;
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+      position: relative;
+    }
+    .board.size-5 {
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+    }
+    .board.size-4 {
+      grid-template-columns: repeat(4, 60px);
+      grid-template-rows: repeat(4, 60px);
+    }
+    .board.size-3 {
+      grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(3, 60px);
+    }
+    .cell {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #000;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      cursor: pointer;
+      position: relative;
+    }
+    .cell .creature {
+      display: inline-block;
+      line-height: 1;
+    }
+    .cell .hover-preview {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .cell:hover {
+      background-color: #f0f0f0;
+    }
+    .cell.checking {
+      border: 3px solid #ffcc00;
+      box-shadow: 0 0 10px #ffcc00;
+    }
+    .cell.scanning {
+      background-color: #fff3cd;
+      border: 2px solid #ffc107;
+    }
+    .cell.match-found {
+      animation: flash-match 0.5s;
+    }
+    @keyframes flash-match {
+      0%, 100% { border-color: #000; }
+      25%, 75% { border-color: #00ff00; border-width: 3px; box-shadow: 0 0 15px #00ff00; }
+      50% { border-color: #000; }
+    }
+    .animated-piece {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .animated-piece .creature {
+      display: inline-block;
+      line-height: 1;
+    }
+    .size-human { font-size: 32px; }
+    .size-fish { font-size: 26px; }
+    .size-frog { font-size: 20px; }
+    .size-mosquito { font-size: 14px; }
+    .size-bear { font-size: 38px; }
+    .info {
+      margin: 10px;
+    }
+    .info label {
+      margin: 0 10px;
+      cursor: pointer;
+    }
+    #next-piece {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      min-height: 30px;
+      vertical-align: middle;
+    }
+    .diagram {
+      margin-top: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .multiplier-popup {
+      position: absolute;
+      font-size: 40px;
+      font-weight: bold;
+      color: #ff6b00;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+      z-index: 20;
+      animation: popup-float 1.5s ease-out forwards;
+    }
+    @keyframes popup-float {
+      0% { transform: scale(0.5) translateY(0); opacity: 0; }
+      20% { transform: scale(1.5) translateY(-10px); opacity: 1; }
+      100% { transform: scale(1) translateY(-80px); opacity: 0; }
+    }
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      z-index: 15;
+      animation: confetti-fall 2s ease-out forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Monster Board Game - Prototype 10</h1>
+  <h3>Long-Range Eating with Board-Wide Chain Resolution</h3>
+  <div class="info">
+    <p>
+      <strong>Difficulty:</strong>
+      <label><input type="radio" name="difficulty" value="5" checked> Easy (5×5)</label>
+      <label><input type="radio" name="difficulty" value="4"> Normal (4×4)</label>
+      <label><input type="radio" name="difficulty" value="3"> Hard (3×3)</label>
+    </p>
+    <p>Score: <span id="score">0</span></p>
+    <p>Next Piece: <span id="next-piece">...</span></p>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="diagram">
+    <p><strong>Circular Food Chain:</strong></p>
+    <p><span class="size-human">🧑</span> Human eats <span class="size-fish">🐟</span> Fish</p>
+    <p><span class="size-fish">🐟</span> Fish eats <span class="size-frog">🐸</span> Frog</p>
+    <p><span class="size-frog">🐸</span> Frog eats <span class="size-mosquito">🦟</span> Mosquito</p>
+    <p><span class="size-mosquito">🦟</span> Mosquito kills <span class="size-human">🧑</span> Human (disease)</p>
+    <p><strong>🚀 NEW: Long-Range Eating!</strong> Pieces leap across empty spaces to eat targets!</p>
+    <p>Example: [🧑→] [ ] [ ] [🐟] → Human jumps 3 spaces to eat fish!</p>
+    <p><strong>🔄 Board-Wide Chains!</strong> After each eat, ALL pieces are checked for new opportunities!</p>
+    <p><strong>💯 Chain Multiplier!</strong> 1 eat = 1 pt, 2 eats = 4 pts, 3 eats = 9 pts, 4 eats = 16 pts!</p>
+    <p><strong>Actions (8% spawn):</strong> ↻ ↺ (rotate in place), ↑ → ↓ ← (move one space)</p>
+    <p><strong>Special Pieces (2% spawn):</strong></p>
+    <p><strong>🪨 Boulder:</strong> Blocks line-of-sight! Pieces can't leap over boulders.</p>
+    <p><strong><span class="size-bear">🐻</span> Bear:</strong> Leaps to eat ANY creature (ignores food chain)!</p>
+    <p><strong>💣 Bomb:</strong> Place on boulders to remove them!</p>
+  </div>
+  <script>
+    let boardSize = 5; // Dynamic based on difficulty
+    const colors = ["🧑", "🐟", "🐸", "🦟"]; // Regular creatures
+    const directions = ["↑", "→", "↓", "←"];
+    const actions = ["↻", "↺", "↑", "→", "↓", "←"]; // Regular actions
+    const specialPieces = ["🐻", "🪨", "💣"]; // Bear, Boulder, and Bomb - 2% spawn rate
+    const eatRules = { "🧑": "🐟", "🐟": "🐸", "🐸": "🦟", "🦟": "🧑" };
+
+    let board = [];
+    let score = 0;
+    let nextPiece = null;
+
+    function getSizeClass(emoji) {
+      const sizeMap = {
+        "🧑": "size-human",
+        "🐟": "size-fish",
+        "🐸": "size-frog",
+        "🦟": "size-mosquito",
+        "🐻": "size-bear"
+      };
+      return sizeMap[emoji] || "";
+    }
+
+    function updateBoardUI() {
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+          const piece = board[r][c];
+          if (!piece) {
+            cell.innerHTML = "";
+          } else if (piece.color) {
+            const sizeClass = getSizeClass(piece.color);
+            cell.innerHTML = `<span class="creature ${sizeClass}">${piece.color}</span>${piece.direction}`;
+          } else if (piece.action) {
+            cell.innerHTML = piece.action;
+          }
+        }
+      }
+    }
+
+    function applyAction(r, c, action) {
+      const piece = board[r][c];
+      if (!piece || !piece.color) return [r, c];
+
+      if (action === "↻") {
+        piece.direction = rotate(piece.direction, 1); // Clockwise
+        return [r, c];
+      } else if (action === "↺") {
+        piece.direction = rotate(piece.direction, -1); // Counterclockwise
+        return [r, c];
+      } else {
+        // Movement arrows: change direction first, then move if no eat
+        // First, change the direction
+        piece.direction = action;
+        
+        // Check if it can eat in the new direction
+        const target = findEatTarget(r, c);
+        if (target) {
+          // Can eat, so just return position (eating will happen in chain resolution)
+          return [r, c];
+        }
+        
+        // Can't eat, so try to move one space
+        const move = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] }[action];
+        const nr = r + move[0];
+        const nc = c + move[1];
+        if (inBounds(nr, nc) && board[nr][nc] === null) {
+          board[nr][nc] = piece;
+          board[r][c] = null;
+          return [nr, nc];
+        }
+        
+        // Can't move, just stay in place with new direction
+        return [r, c];
+      }
+    }
+
+    function rotate(dir, delta) {
+      const idx = directions.indexOf(dir);
+      return directions[(idx + delta + 4) % 4];
+    }
+
+    function inBounds(r, c) {
+      return r >= 0 && r < boardSize && c >= 0 && c < boardSize;
+    }
+
+    function highlightCell(r, c, className) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) {
+        cell.classList.add(className);
+      }
+    }
+
+    function unhighlightCell(r, c, className) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) {
+        cell.classList.remove(className);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function showMultiplierPopup(r, c, chainLength, points) {
+      const cellPos = getCellPosition(r, c);
+      const popup = document.createElement('div');
+      popup.className = 'multiplier-popup';
+      popup.textContent = `${chainLength}x = ${points} pts!`;
+      popup.style.left = cellPos.left + 'px';
+      popup.style.top = cellPos.top + 'px';
+      boardElem.appendChild(popup);
+      
+      setTimeout(() => popup.remove(), 1500);
+    }
+
+    function createConfetti(r, c, count) {
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500'];
+      const cellPos = getCellPosition(r, c);
+      
+      for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = (cellPos.left + 30 + (Math.random() - 0.5) * 40) + 'px';
+        confetti.style.top = (cellPos.top + 30) + 'px';
+        confetti.style.animationDelay = (Math.random() * 0.3) + 's';
+        confetti.style.transform = `translateX(${(Math.random() - 0.5) * 200}px)`;
+        boardElem.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 2000);
+      }
+    }
+
+    async function flashMatch(r, c) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      if (cell) {
+        cell.classList.add('match-found');
+        await sleep(500);
+        cell.classList.remove('match-found');
+      }
+    }
+
+    async function placePiece(r, c) {
+      if (!nextPiece) return;
+      const cell = board[r][c];
+      let shouldResolve = false;
+      let placedPos = null;
+      
+      if (nextPiece.color && !cell) {
+        // Place piece directly where clicked
+        board[r][c] = { ...nextPiece };
+        shouldResolve = true;
+        placedPos = [r, c];
+        updateBoardUI();
+      } else if (nextPiece.action === "🪨" && !cell) {
+        // Boulder: place on empty cell, acts as permanent obstacle
+        board[r][c] = { action: "🪨" };
+        updateBoardUI();
+      } else if (nextPiece.action === "💣" && cell && cell.action === "🪨") {
+        // Bomb: can only be placed on boulders, removes both
+        await flashMatch(r, c);
+        board[r][c] = null; // Remove boulder and bomb
+        updateBoardUI();
+      } else if (nextPiece.action && cell && cell.color) {
+        const finalPos = applyAction(r, c, nextPiece.action);
+        shouldResolve = true;
+        placedPos = finalPos;
+        updateBoardUI();
+        await sleep(300); // Show movement
+      } else {
+        return;
+      }
+
+      if (shouldResolve && placedPos) {
+        await resolveAllChains(placedPos);
+      }
+      
+      nextPiece = generateNextPiece();
+      scoreDisplay.textContent = score;
+      updateBoardUI();
+      nextPieceDisplay.innerHTML = displayPiece(nextPiece);
+
+      if (isBoardFull()) {
+        alert("Game Over! Final Score: " + score);
+        resetGame();
+      }
+    }
+
+    // NEW: Find eat target along direction (skipping empty cells)
+    function findEatTarget(r, c) {
+      const piece = board[r][c];
+      if (!piece || !piece.color) return null;
+      
+      const dirDeltas = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] };
+      const [dr, dc] = dirDeltas[piece.direction];
+      
+      let distance = 1;
+      while (true) {
+        const targetR = r + (dr * distance);
+        const targetC = c + (dc * distance);
+        
+        if (!inBounds(targetR, targetC)) return null;
+        
+        const target = board[targetR][targetC];
+        
+        if (target === null) {
+          // Empty cell - keep scanning
+          distance++;
+          continue;
+        }
+        
+        // Hit something - check if it's valid food
+        if (target.color) {
+          // Bear can eat any creature
+          if (piece.color === "🐻") {
+            return { r: targetR, c: targetC, distance };
+          }
+          // Regular pieces follow food chain
+          if (target.color === eatRules[piece.color]) {
+            return { r: targetR, c: targetC, distance };
+          }
+        }
+        
+        // Hit a boulder or non-food - blocked
+        return null;
+      }
+    }
+
+    // NEW: Board-wide chain resolution
+    async function resolveAllChains(placedPos = null) {
+      let totalChainLength = 0;
+      let chainContinues = true;
+      let lastEatPos = null;
+      let isFirstIteration = true;
+      
+      while (chainContinues) {
+        chainContinues = false;
+        
+        // Scan ENTIRE board for possible eats
+        const allPossibleEats = [];
+        
+        // On first iteration, check the placed piece first
+        if (isFirstIteration && placedPos) {
+          const [r, c] = placedPos;
+          const piece = board[r][c];
+          if (piece && piece.color) {
+            const target = findEatTarget(r, c);
+            if (target) {
+              allPossibleEats.push({ 
+                fromR: r, 
+                fromC: c, 
+                toR: target.r, 
+                toC: target.c,
+                distance: target.distance,
+                priority: 0 // Highest priority
+              });
+            }
+          }
+        }
+        
+        // Then scan rest of board
+        for (let r = 0; r < boardSize; r++) {
+          for (let c = 0; c < boardSize; c++) {
+            // Skip the placed piece on first iteration (already checked)
+            if (isFirstIteration && placedPos && r === placedPos[0] && c === placedPos[1]) {
+              continue;
+            }
+            
+            const piece = board[r][c];
+            if (piece && piece.color) {
+              const target = findEatTarget(r, c);
+              if (target) {
+                allPossibleEats.push({ 
+                  fromR: r, 
+                  fromC: c, 
+                  toR: target.r, 
+                  toC: target.c,
+                  distance: target.distance,
+                  priority: isFirstIteration ? 1 : 0 // Normal priority on first iteration, all equal after
+                });
+              }
+            }
+          }
+        }
+        
+        if (allPossibleEats.length > 0) {
+          // Pick one using deterministic tie-breaking
+          const eatToExecute = selectEat(allPossibleEats);
+          
+          // Highlight checking
+          highlightCell(eatToExecute.fromR, eatToExecute.fromC, 'checking');
+          await sleep(150);
+          
+          // Highlight scan path
+          await highlightScanPath(eatToExecute.fromR, eatToExecute.fromC, eatToExecute.toR, eatToExecute.toC);
+          
+          unhighlightCell(eatToExecute.fromR, eatToExecute.fromC, 'checking');
+          
+          // Execute the eat with animation
+          await executeEat(eatToExecute);
+          lastEatPos = [eatToExecute.toR, eatToExecute.toC];
+          totalChainLength++;
+          chainContinues = true;
+        }
+        
+        isFirstIteration = false;
+      }
+      
+      if (totalChainLength > 0) {
+        const points = totalChainLength * totalChainLength;
+        score += points;
+        
+        if (totalChainLength >= 2 && lastEatPos) {
+          showMultiplierPopup(lastEatPos[0], lastEatPos[1], totalChainLength, points);
+          
+          if (totalChainLength >= 3) {
+            const confettiCount = Math.min(totalChainLength * 5, 30);
+            createConfetti(lastEatPos[0], lastEatPos[1], confettiCount);
+          }
+        }
+      }
+    }
+
+    // NEW: Deterministic tie-breaking
+    function selectEat(possibleEats) {
+      // Priority rules:
+      // 0. Placed piece priority (0 = placed piece, 1 = other pieces)
+      // 1. Shortest distance (creates more board movement)
+      // 2. Top-to-bottom (lower row number)
+      // 3. Left-to-right (lower column number)
+      
+      possibleEats.sort((a, b) => {
+        if (a.priority !== b.priority) return a.priority - b.priority;
+        if (a.distance !== b.distance) return a.distance - b.distance;
+        if (a.fromR !== b.fromR) return a.fromR - b.fromR;
+        return a.fromC - b.fromC;
+      });
+      
+      return possibleEats[0];
+    }
+
+    // NEW: Highlight scan path
+    async function highlightScanPath(fromR, fromC, toR, toC) {
+      const piece = board[fromR][fromC];
+      const dirDeltas = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] };
+      const [dr, dc] = dirDeltas[piece.direction];
+      
+      let distance = 1;
+      const pathCells = [];
+      
+      while (true) {
+        const scanR = fromR + (dr * distance);
+        const scanC = fromC + (dc * distance);
+        
+        if (!inBounds(scanR, scanC)) break;
+        
+        pathCells.push([scanR, scanC]);
+        highlightCell(scanR, scanC, 'scanning');
+        
+        if (scanR === toR && scanC === toC) break;
+        distance++;
+      }
+      
+      await sleep(200);
+      
+      // Clear highlights
+      for (const [r, c] of pathCells) {
+        unhighlightCell(r, c, 'scanning');
+      }
+    }
+
+    // NEW: Execute a single eat
+    async function executeEat(eatInfo) {
+      const { fromR, fromC, toR, toC } = eatInfo;
+      const piece = board[fromR][fromC];
+      
+      await Promise.all([flashMatch(fromR, fromC), flashMatch(toR, toC)]);
+      await animateEat(fromR, fromC, toR, toC, piece);
+      
+      // Move piece to target position
+      board[toR][toC] = { ...piece };
+      board[fromR][fromC] = null;
+      updateBoardUI();
+    }
+
+    function getCellPosition(r, c) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const boardRect = boardElem.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+      return {
+        left: cellRect.left - boardRect.left,
+        top: cellRect.top - boardRect.top
+      };
+    }
+
+    async function animateEat(fromR, fromC, toR, toC, piece) {
+      return new Promise(resolve => {
+        const animPiece = document.createElement('div');
+        animPiece.className = 'animated-piece';
+        const sizeClass = getSizeClass(piece.color);
+        animPiece.innerHTML = `<span class="creature ${sizeClass}">${piece.color}</span>${piece.direction}`;
+        
+        const fromPos = getCellPosition(fromR, fromC);
+        const toPos = getCellPosition(toR, toC);
+        
+        // Calculate distance for animation duration
+        const distance = Math.abs(toR - fromR) + Math.abs(toC - fromC);
+        const duration = 200 + (distance * 50); // Scale with distance
+        
+        animPiece.style.left = fromPos.left + 'px';
+        animPiece.style.top = fromPos.top + 'px';
+        animPiece.style.transition = `all ${duration}ms ease-in-out`;
+        
+        boardElem.appendChild(animPiece);
+        
+        requestAnimationFrame(() => {
+          animPiece.style.left = toPos.left + 'px';
+          animPiece.style.top = toPos.top + 'px';
+        });
+        
+        setTimeout(() => {
+          animPiece.remove();
+          resolve();
+        }, duration);
+      });
+    }
+
+    function isBoardFull() {
+      return board.every(row => row.every(cell => cell !== null));
+    }
+
+    function hasBoulders() {
+      return board.some(row => row.some(cell => cell && cell.action === "🪨"));
+    }
+
+    function generateNextPiece() {
+      const hasCharacter = board.some(row => row.some(cell => cell && cell.color));
+      const rand = Math.random();
+      
+      if (!hasCharacter) {
+        // First piece is always a regular creature
+        return {
+          color: colors[Math.floor(Math.random() * colors.length)],
+          direction: directions[Math.floor(Math.random() * directions.length)]
+        };
+      } else if (rand < 0.90) {
+        // 90% regular creatures
+        return {
+          color: colors[Math.floor(Math.random() * colors.length)],
+          direction: directions[Math.floor(Math.random() * directions.length)]
+        };
+      } else if (rand < 0.98) {
+        // 8% regular actions
+        return {
+          action: actions[Math.floor(Math.random() * actions.length)]
+        };
+      } else {
+        // 2% special pieces (bear, boulder, or bomb)
+        const bouldersOnBoard = hasBoulders();
+        let availableSpecials = specialPieces.filter(s => {
+          // Only include bomb if there are boulders to blow up
+          return s !== "💣" || bouldersOnBoard;
+        });
+        
+        // If no specials available (e.g., bomb wanted but no boulders), give a regular creature
+        if (availableSpecials.length === 0) {
+          return {
+            color: colors[Math.floor(Math.random() * colors.length)],
+            direction: directions[Math.floor(Math.random() * directions.length)]
+          };
+        }
+        
+        const special = availableSpecials[Math.floor(Math.random() * availableSpecials.length)];
+        if (special === "🐻") {
+          // Bear is a creature with direction
+          return {
+            color: "🐻",
+            direction: directions[Math.floor(Math.random() * directions.length)]
+          };
+        } else if (special === "🪨") {
+          // Boulder is an action
+          return {
+            action: "🪨"
+          };
+        } else {
+          // Bomb is an action
+          return {
+            action: "💣"
+          };
+        }
+      }
+    }
+
+    function displayPiece(piece) {
+      if (piece.color) {
+        const sizeClass = getSizeClass(piece.color);
+        return `<span class="creature ${sizeClass}">${piece.color}</span>${piece.direction}`;
+      } else {
+        return piece.action;
+      }
+    }
+
+    function resetGame() {
+      board = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+      score = 0;
+      scoreDisplay.textContent = 0;
+      nextPiece = generateNextPiece();
+      nextPieceDisplay.innerHTML = displayPiece(nextPiece);
+      updateBoardUI();
+    }
+
+    function buildBoard() {
+      // Clear existing board
+      boardElem.innerHTML = '';
+      
+      // Update board size class
+      boardElem.className = 'board size-' + boardSize;
+      
+      // Create cells
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.onclick = () => placePiece(r, c);
+          cell.onmouseenter = () => showHoverPreview(r, c);
+          cell.onmouseleave = () => hideHoverPreview(r, c);
+          boardElem.appendChild(cell);
+        }
+      }
+    }
+
+    function changeDifficulty(newSize) {
+      boardSize = parseInt(newSize);
+      buildBoard();
+      resetGame();
+    }
+
+    const boardElem = document.getElementById("board");
+    const scoreDisplay = document.getElementById("score");
+    const nextPieceDisplay = document.getElementById("next-piece");
+
+    function showHoverPreview(r, c) {
+      if (!nextPiece) return;
+      
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const piece = board[r][c];
+      
+      // Valid placements:
+      // - Color pieces (including bear) on empty cells
+      // - Boulder on empty cells
+      // - Bomb on boulders only
+      // - Other actions on cells with color pieces
+      const isValid = (nextPiece.color && !piece) || 
+                      (nextPiece.action === "🪨" && !piece) ||
+                      (nextPiece.action === "💣" && piece && piece.action === "🪨") ||
+                      (nextPiece.action && piece && piece.color && nextPiece.action !== "🪨" && nextPiece.action !== "💣");
+      if (!isValid) return;
+      
+      const preview = document.createElement('div');
+      preview.className = 'hover-preview';
+      preview.innerHTML = displayPiece(nextPiece);
+      cell.appendChild(preview);
+    }
+
+    function hideHoverPreview(r, c) {
+      const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const preview = cell.querySelector('.hover-preview');
+      if (preview) {
+        preview.remove();
+      }
+    }
+
+    // Add event listeners for difficulty radio buttons
+    document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        changeDifficulty(e.target.value);
+      });
+    });
+
+    // Initialize game
+    buildBoard();
+    resetGame();
+  </script>
+</body>
+</html>
+
