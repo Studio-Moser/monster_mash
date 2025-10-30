@@ -410,6 +410,65 @@
       <a href="Code/Prototype 9/index.html" class="play-button">▶ Play Prototype 9</a>
     </div>
 
+    <div class="prototype-card featured">
+      <span class="prototype-number">Prototype 10</span><span class="badge">LATEST</span>
+      <h2>Long-Range Eating & Board-Wide Chains</h2>
+      
+      <div class="mechanics">
+        <strong>Board:</strong> 3×3, 4×4, or 5×5 (difficulty selector!)<br>
+        <strong>Goal:</strong> Create massive board-spanning chain reactions<br>
+        <strong>Scoring:</strong> Chain multiplier - n² points (1=1, 2=4, 3=9, 4=16 pts!)<br>
+        <strong>Spawn:</strong> 90% creatures / 8% actions / 2% specials
+      </div>
+      
+      <div class="description">
+        <strong>🎲 Regular Creatures (90%):</strong> 🧑 Human, 🐟 Fish, 🐸 Frog, 🦟 Mosquito<br>
+        <strong>Food Chain:</strong> Human→Fish→Frog→Mosquito→Human (circular loop, no evolution)<br>
+        <strong>Direction:</strong> Each faces ↑↓←→ (randomly assigned)<br><br>
+        
+        <strong>🚀 GAME CHANGER: Long-Range Eating!</strong> Pieces can now leap across empty spaces to eat targets anywhere in their facing direction!<br><br>
+        
+        <strong>How It Works:</strong><br>
+        • Piece scans along facing direction (↑→↓←)<br>
+        • Empty cells are transparent to vision<br>
+        • Example: [🧑→][ ][ ][🐟] → Human leaps 3 spaces to eat Fish!<br>
+        • 🪨 Boulders block line-of-sight (strategic placement!)<br>
+        • Animation speed scales with distance traveled<br><br>
+        
+        <strong>🔄 Board-Wide Chain Resolution!</strong> After ANY eat, ENTIRE board is scanned for new opportunities:<br>
+        • Clearing one piece can enable multiple others to suddenly see their targets<br>
+        • Creates massive cascading chains across the entire board<br>
+        • Yellow glow + scanning highlight shows evaluation logic<br>
+        • Placed piece always evaluates FIRST (priority system)<br><br>
+        
+        <strong>⚙️ Improved Action Logic:</strong><br>
+        • ↻ (clockwise rotate in place) / ↺ (counterclockwise rotate)<br>
+        • ↑→↓← (directional arrows) now: change direction FIRST, then move 1 space if can't eat<br>
+        • More strategic - arrows useful for both repositioning AND setting up attacks<br><br>
+        
+        <strong>⭐ Special Pieces (2% spawn):</strong><br>
+        • 🐻 <strong>Bear</strong> - Leaps across board to eat ANY creature (ignores food chain)!<br>
+        • 🪨 <strong>Boulder</strong> - Blocks line-of-sight! Strategic obstacle placement<br>
+        • 💣 <strong>Bomb</strong> - Removes boulders (only spawns when boulders exist)<br><br>
+        
+        <strong>🎯 Difficulty Levels:</strong><br>
+        • <strong>Easy (5×5):</strong> More space to work with, longer chains possible<br>
+        • <strong>Normal (4×4):</strong> Balanced challenge, fills faster<br>
+        • <strong>Hard (3×3):</strong> Tight space, every placement critical!<br><br>
+        
+        <strong>💯 Chain Multiplier:</strong> Exponential scoring rewards board-wide cascades! 1=1pt, 2=4pts, 3=9pts, 4=16pts, 5=25pts! Confetti celebrates 3+ chains.<br><br>
+        
+        <strong>Why This Changes Everything:</strong><br>
+        • Line-of-sight creates spatial strategy depth<br>
+        • One smart placement can trigger 5+ chain cascades<br>
+        • Boulder placement becomes critical (blocks vision)<br>
+        • Bear becomes powerful board-clearing tool<br>
+        • Smaller boards = harder difficulty without changing rules<br>
+        • More rewarding setup play - clearing paths unlocks combos!
+      </div>
+      <a href="Code/Prototype 10/index.html" class="play-button">▶ Play Prototype 10</a>
+    </div>
+
   </div>
 </body>
 </html>
